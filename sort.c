@@ -2,18 +2,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define PROC 128
+#define PROC (1<<6)
 #define NUM (1<<20)
 
+const int procp = 6;
+const int nump = 20;
 const int part = NUM / PROC;
+const int partp = nump - procp;
 
 void internal(int* a, int i, int j, int sz, int myid){
-    int base = myid * part;
-    if(base % sz) return;
+    int base = myid << partp;
+    if(base & (sz - 1)) return;
     int d = 1 << (i - j);
-    // if(myid == 0){
-    //     printf("a[0] : %d, a[1] : %d", a[0], a[1]);
-    // }
     for(int k = base; k < base + sz; k++){
         int up = (((k >> i) & 2) == 0 ? 1 : 0);
         int idx = k - base;
@@ -23,17 +23,14 @@ void internal(int* a, int i, int j, int sz, int myid){
             a[idx | d] = t;
         }
     }
-    // if(myid == 0){
-    //     printf("a[0] : %d, a[1] : %d", a[0], a[1]);
-    // }
 }
 
 // gatherがちゃんと動いているか確認
 int gather(int d, int myid, int* buf){
+    if(d <= partp) return part;
     int width = 1 << d;
-    if(width <= part) return part;
-    int num = width / part;
-    if(myid % num == 0){ 
+    int num = width >> partp;
+    if((myid & (num - 1)) == 0){ 
         //printf("myid : %d is gathering from %d\n", myid, myid + 1);
         for(int i = 1; i < num; i++){
             MPI_Recv(buf + i*part, part, MPI_INT, myid + i,  myid + i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -48,22 +45,23 @@ int gather(int d, int myid, int* buf){
 
 void distribute(int myid, int width, int ij, int* buf){
     //printf("IN DISTRIBUTE ||||| width : %d", width);
-    int d = width / 2; // next width
-    int num = d / part; // num parts compose one set
-    if(myid * part % width == 0){
+    int d = width >> 1; // next width
+    int num = d >> partp; // num parts compose one set
+    if(((myid * part) & (width - 1)) == 0){
         MPI_Send(buf + d, d, MPI_INT, myid + num, myid, MPI_COMM_WORLD);
     }
-    else if((myid + num) * part % width == 0){
+    else if((((myid + num) * part) & (width - 1)) == 0){
         MPI_Recv(buf, d, MPI_INT, myid - num, myid - num, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
 }
 
 int main(int argc, char** argv){
 	int myid, numproc;
-    int t1, t2, elapsed, lg = 0, tmp = NUM;
+    double t1, t2, elapsed;
+    int lg = 0, tmp = NUM;
     while(tmp != 1) lg++, tmp >>= 1;
 
-    //printf("log : %d\n", lg);
+    printf("log : %d\n", lg);
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_size(MPI_COMM_WORLD, &numproc);
@@ -101,7 +99,7 @@ int main(int argc, char** argv){
     MPI_Gather(buf, part, MPI_INT, buf, part, MPI_INT, 0, MPI_COMM_WORLD);
 
     if(myid == 0){
-        printf("%d\n", elapsed);
+        printf("%lf\n", elapsed);
         for(int i = 0; i < NUM - 1; i++){
             if(buf[i] > buf[i + 1]){
                 printf("fail\n");
