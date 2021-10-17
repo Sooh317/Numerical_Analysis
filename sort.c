@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define PROC (1<<6)
-#define NUM (1<<20)
+#define PROC (1<<3)
+const int procp = 3;
+#define NUM (1<<5)
+const int nump = 5;
 
-const int procp = 6;
-const int nump = 20;
 const int part = NUM / PROC;
 const int partp = nump - procp;
 int buf[NUM];
@@ -42,6 +42,25 @@ int gather(int d, int myid, int* a){
     return width;
 }
 
+int gather2(int d, int myid, int* a){
+    if(d <= partp) return part;
+    int width = 1 << d;
+    int width1 = 1 << (d - 1);
+    int num = width >> partp;
+    int num1 = num >> 1;
+    int np = d - partp;
+    if((myid & (num - 1)) == 0){ 
+        //printf("myid %d is receiving from %d, data : %d\n", myid, myid + num1,);
+        MPI_Recv(a + width1, width1, MPI_INT, myid + num1,  myid + num1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        
+    }
+    else if((myid & (num1 - 1)) == 0){
+        //printf("myid %d is sending to %d\n", myid, (myid >> np) << np);
+        MPI_Send(a, width1, MPI_INT, (myid >> np) << np, myid, MPI_COMM_WORLD);
+    }
+    return width;
+}
+
 void distribute(int myid, int width, int ij, int* a){
     int d = width >> 1; // next width
     int num = d >> partp; // num parts compose one set
@@ -69,7 +88,7 @@ int main(int argc, char** argv){
     MPI_Barrier(MPI_COMM_WORLD);
     t1 = MPI_Wtime();
     
-    
+/*    
     for(int i = 0; i < nump; i++){
         int width = gather(i + 1, myid, buf);
         for(int j = 0; j <= i; j++){
@@ -80,6 +99,16 @@ int main(int argc, char** argv){
             }
         }
     }
+*/
+
+    for(int i = 0; i < nump; i++){
+        int width = gather2(i + 1, myid, buf);
+        for(int j = 0; j <= i; j++){
+            internal(buf, i, j, width, myid);
+        }
+    }
+
+    MPI_Scatter(buf, part, MPI_INTEGER, buf, part, MPI_INTEGER, 0, MPI_COMM_WORLD);
 
     MPI_Barrier(MPI_COMM_WORLD);
     t2 = MPI_Wtime();
