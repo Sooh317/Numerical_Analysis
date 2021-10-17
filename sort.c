@@ -9,6 +9,7 @@ const int procp = 6;
 const int nump = 20;
 const int part = NUM / PROC;
 const int partp = nump - procp;
+int buf[NUM];
 
 void internal(int* a, int i, int j, int sz, int myid){
     int base = myid << partp;
@@ -25,63 +26,51 @@ void internal(int* a, int i, int j, int sz, int myid){
     }
 }
 
-// gatherがちゃんと動いているか確認
-int gather(int d, int myid, int* buf){
+int gather(int d, int myid, int* a){
     if(d <= partp) return part;
     int width = 1 << d;
     int num = width >> partp;
+    int np = d - partp;
     if((myid & (num - 1)) == 0){ 
-        //printf("myid : %d is gathering from %d\n", myid, myid + 1);
         for(int i = 1; i < num; i++){
-            MPI_Recv(buf + i*part, part, MPI_INT, myid + i,  myid + i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(a + i*part, part, MPI_INT, myid + i,  myid + i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
     }
     else{
-        //printf("myid : %d is sending to %d\n", myid, myid / num * num);
-        MPI_Send(buf, part, MPI_INT, myid / num * num, myid, MPI_COMM_WORLD);
+        MPI_Send(a, part, MPI_INT, (myid >> np) << np, myid, MPI_COMM_WORLD);
     }
     return width;
 }
 
-void distribute(int myid, int width, int ij, int* buf){
-    //printf("IN DISTRIBUTE ||||| width : %d", width);
+void distribute(int myid, int width, int ij, int* a){
     int d = width >> 1; // next width
     int num = d >> partp; // num parts compose one set
     if(((myid * part) & (width - 1)) == 0){
-        MPI_Send(buf + d, d, MPI_INT, myid + num, myid, MPI_COMM_WORLD);
+        MPI_Send(a + d, d, MPI_INT, myid + num, myid, MPI_COMM_WORLD);
     }
     else if((((myid + num) * part) & (width - 1)) == 0){
-        MPI_Recv(buf, d, MPI_INT, myid - num, myid - num, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(a, d, MPI_INT, myid - num, myid - num, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
 }
 
 int main(int argc, char** argv){
 	int myid, numproc;
     double t1, t2, elapsed;
-    int lg = 0, tmp = NUM;
-    while(tmp != 1) lg++, tmp >>= 1;
-
-    printf("log : %d\n", lg);
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_size(MPI_COMM_WORLD, &numproc);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
-    int buf[NUM];
 
 	if(myid == 0){
-        for(int i = 0; i < NUM; i++){
-            buf[i] = rand();
-            //printf("%d ", buf[i]);
-        }
-        //printf("\n");
+        for(int i = 0; i < NUM; i++) buf[i] = rand();
     }
-    MPI_Scatter(buf, NUM / PROC, MPI_INTEGER, buf, NUM / PROC, MPI_INTEGER, 0, MPI_COMM_WORLD);
+    MPI_Scatter(buf, part, MPI_INTEGER, buf, part, MPI_INTEGER, 0, MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);
     t1 = MPI_Wtime();
     
     
-    for(int i = 0; i < lg; i++){
+    for(int i = 0; i < nump; i++){
         int width = gather(i + 1, myid, buf);
         for(int j = 0; j <= i; j++){
             internal(buf, i, j, width, myid);
@@ -109,6 +98,5 @@ int main(int argc, char** argv){
     }
 
 	MPI_Finalize();
-
 	return 0;
 }
