@@ -49,7 +49,7 @@ int gather(int d, int myid){
     return width;
 }
 
-void distribute(int width, int ij){
+void distribute(int width){
     int d = width >> 1; // next width
     int num = d >> partp; // num parts compose one set
     if((myp & (width - 1)) == 0){
@@ -84,7 +84,7 @@ int main(int argc, char** argv){
         for(int j = 0; j <= i; j++){
             internal(i, j, width, myid);
             if(width > part){
-                distribute(width, i - j);
+                distribute(width);
                 width >>= 1;
             }
         }
@@ -106,6 +106,6 @@ int main(int argc, char** argv){
         }
     }
 
-        MPI_Finalize();
-        return 0;
+    MPI_Finalize();
+    return 0;
 }
