@@ -1,5 +1,7 @@
+// compile like this :  mpic++ -O3 main.cpp
+// node number -> 4
+// task number per node -> 8
 #pragma GCC optimize("unroll-loops")
-#pragma GCC optimize("O3")
 #include <mpi.h>
 #include <stdio.h>
 #include <algorithm>
