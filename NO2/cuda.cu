@@ -29,6 +29,19 @@ void kernel(int n, float r, float* a){
     }
 }
 
+/*
+__global__
+void kernel(int N, float r, float rr, float *u){
+    int i = (threadIdx.x + 1) * 12;
+    for(int t=1; t<=100; t++){
+        int k = (t % 2) * N * N;
+        int kk = (1 - (t % 2)) * N * N;
+        for(int j=1; j<N-1; j++) u[k + i + j] = rr * u[kk + i + j] + r * (u[kk + i - N + j] + u[kk + i + j - 1] + u[kk + i + N + j] + u[kk + i + j + 1]);
+        __syncthreads();
+    } 
+}
+*/
+
 
 int main(){
     const int N = S + 2;
