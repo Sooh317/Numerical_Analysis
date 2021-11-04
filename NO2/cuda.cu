@@ -18,7 +18,7 @@ double elapsed(){
 }
 
 __global__
-void kernel(int i, long n, long NN, int wp, int height, float r, float rr, float* a){
+void kernel(const int i, const long n,const long NN, const int wp, const int height, float r, float rr, float* a){
     float *dp = a + (i & 1)*NN, *ndp = a + (1 - (i & 1))*NN;
 	long base = n + 1;
 	long idx = base + (blockIdx.x >> wp) * n + (blockIdx.x & ((1 << wp) - 1)) * blockDim.x + threadIdx.x;
@@ -62,13 +62,16 @@ int main(){
 
 	double t3 = elapsed();
 
+    // 確認用
+/*
+	printf("cuda\n");
 	for(int i = 1; i <= 10; i++){
 	    for(int j = 1; j <= 10; j++){
             printf("%f ", dp_host[(ITER & 1)*(N*N) + i*N + j]);
         }
         printf("\n");
     }
-
+*/
 	printf("H2D : %f\nCOMP: %f\nD2H : %f\n",t1-t0,t2-t1,t3-t2);
 
 	cudaFree(dp_dev);
