@@ -5,9 +5,19 @@
 #include <stdlib.h>
 
 const int ITER = 100;
+
 const long S = 1 << 12;
 const int BLOCK_NUM = 256;
 const int THREAD_NUM = 1024;
+const int widthp = 2; // 1 << widthp 個のブロックが正方形の1行に対応
+
+
+/* 確認用
+const long S = 10;
+const int BLOCK_NUM = 4;
+const int THREAD_NUM = 5;
+const int widthp = 1;
+*/
 
 double elapsed(){
 	struct timespec ts;
@@ -16,11 +26,11 @@ double elapsed(){
 }
 
 __global__
-void kernel(long n, long NN, int width, int height, float r, float rr, float* a){
+void kernel(int i, long n, long NN, int widthp, int height, float r, float rr, float* a){
     float *dp = a + (i & 1)*NN, *ndp = a + (1 - (i & 1))*NN;
 	long base = n + 1;
-	long idx = base + (blockIdx.x / width) * n + (blockIdx.x % width) * blockDim.x + threadIdx.x;
-	while(idx < NN){
+	long idx = base + (blockIdx.x >> widthp) * n + (blockIdx.x & ((1 << widthp) - 1)) * blockDim.x + threadIdx.x;
+	while(idx < NN - n){
 		ndp[idx] = rr*dp[idx] + r*(dp[idx - n] + dp[idx + n] + dp[idx - 1] + dp[idx + 1]);
 	    idx += n * height;
 	}
@@ -30,7 +40,6 @@ void kernel(long n, long NN, int width, int height, float r, float rr, float* a)
 int main(){
     const long N = S + 2;
 	const long NN = N*N;
-	const long width = S / THREAD_NUM;
 	const int height = BLOCK_NUM / (S / THREAD_NUM);
 	int size = (2*N*N) * sizeof(float);
 	float* dp_host = (float*)malloc(size);
@@ -51,7 +60,7 @@ int main(){
 	double t1 = elapsed();
 	
 	for(int i = 0; i < ITER; i++){
-		kernel<<<BLOCK_NUM,THREAD_NUM>>>(N, NN, width, height, r, rr, dp_dev);
+		kernel<<<BLOCK_NUM,THREAD_NUM>>>(i, N, NN, widthp, height, r, rr, dp_dev);
 	}
 	cudaDeviceSynchronize();
 
