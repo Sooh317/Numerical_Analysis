@@ -46,23 +46,32 @@ def Runge_Kutta_Fehlberg(h, x0, y0, dy0, EPS, alpha):
     '''
     rx = [x0] # record of x
     ry = [y0] # record of y
+    rh = [h] # record of h
     rdy = [dy0] # record of dy/dx
-    for _ in range(100):
+    while rx[-1] < 2*math.pi:
         while True:
             x5, y5, dy5 = internal(rx[-1], ry[-1], rdy[-1], h, 0) #5次
             _, y4, _ = internal(rx[-1], ry[-1], rdy[-1], h, 1) #4次
             diff = y5 - y4
-            if abs(diff) <= EPS : break
-            h = alpha * h * ((EPS / abs(diff))**(0.2))
+            if abs(diff) < EPS :
+                rh.append(h)
+                h = alpha * h * ((EPS / abs(diff))**(0.2))
+                break
+            h /= 2.0
         rx.append(x5)
         ry.append(y5)
         rdy.append(dy5)
     
-    return rx, ry
+    return rx, ry, rh
 
-res_x, res_y = Runge_Kutta_Fehlberg(math.pi / 50, 0, 0, 0, 0.00001, 0.8)
+res_x, res_y, res_h = Runge_Kutta_Fehlberg(math.pi / 50, 0, 0, 0, 0.00001, 0.8)
 
-plt.plot(res_x, res_y, linewidth = 5, label="RungeKutta")
-plt.plot(res_x, list(map(real_f, res_x)), label="Real-Function")
-plt.legend()
+#描画
+fig, ax = plt.subplots(2, 1)
+ax[0].plot(res_x, res_y, linewidth = 5, label="RungeKutta")
+ax[0].plot(res_x, list(map(real_f, res_x)), label="Real-Function")
+ax[0].legend()
+ax[1].plot(res_x, res_h, label='step width')
+ax[1].set_ylim(0, 0.21)
+ax[1].legend()
 plt.show()
