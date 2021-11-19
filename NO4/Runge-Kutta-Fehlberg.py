@@ -37,10 +37,12 @@ def internal(_x, _y, _dy, h, flag):
 
 def Runge_Kutta_Fehlberg(h, x0, y0, dy0, EPS, alpha): 
     '''
-        h : 刻み幅
-        x0 : xの初期値
-        y : y(x0)
-        dy: dy(x0)/dxの初期値
+        h     : 刻み幅
+        x0    : xの初期値
+        y0    : y(x0)
+        dy0   : dy(x0)/dxの初期値
+        EPS   : 許容誤差
+        alpha : 安全係数
     '''
     rx = [x0] # record of x
     ry = [y0] # record of y
