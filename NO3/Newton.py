@@ -1,4 +1,5 @@
 import math
+import matplotlib.pyplot as plt
 
 def f(x): # 目的の関数
     return (math.e**(x**4)) - math.pi
@@ -45,16 +46,50 @@ def decelaration_Newton(a, beta, lamb):
         if error < EPS : break
     return rx
 
-
-NX_middle = Newton(0.5)
 NX_small = Newton(0.0001)
+NX_middle = Newton(0.5)
 NX_large = Newton(5)
-print('NX_small\n', NX_small, len(NX_small))
-print('NX_middle\n', NX_middle, len(NX_middle))
-print('NX_large\n', NX_large, len(NX_large))
 DNX_small = decelaration_Newton(0.0001, 0.5, 1.5)
 DNX_middle = decelaration_Newton(0.5, 0.5, 1.5)
 DNX_large = decelaration_Newton(5, 0.5, 1.5)
-print('DNX_small\n', DNX_small, len(DNX_small))
-print('DNX_middle\n', DNX_middle, len(DNX_middle))
-print('DNX_large\n', DNX_large, len(DNX_large))
+
+#描画
+xs = [0.01 * i for i in range(0, 200)]
+ys = list(map(f, xs))
+
+xl, xr = 0, 6
+yl, yr = -5.0, 100
+
+fig, ax = plt.subplots(1, 3)
+
+for i in range(3):
+    ax[i].set_xlim(xl, xr)
+    ax[i].set_ylim(yl, yr)
+    ax[i].plot([0.01 * i for i in range(0, int(xr / 0.01))], [0 for i in range(0, int(xr / 0.01))], c = 'black')
+    ax[i].plot(xs, ys)
+    ax[i].set_ylabel('y')
+    ax[i].set_xlabel('x')
+
+# small
+ax[0].set_title('small')
+ax[0].scatter(NX_small, [0 for _ in range(len(NX_small))], marker = "o", s = 20, c = 'red', label='newton')
+ax[0].scatter(DNX_small, [0 for _ in range(len(DNX_small))], marker = "^", s = 10, c = 'black', label = 'D-newton')
+#middle
+ax[1].set_title('middle')
+ax[1].scatter(NX_middle, [0 for _ in range(len(NX_middle))], marker = "o", s = 20, c = 'red', label='newton')
+ax[1].scatter(DNX_middle, [0 for _ in range(len(DNX_middle))], marker = "^", s = 10, c = 'black', label = 'D-newton')
+#large
+ax[2].set_title('large')
+ax[2].scatter(NX_large, [0 for _ in range(len(NX_large))], marker = "o", s = 20, c = 'red', label='newton')
+ax[2].scatter(DNX_large, [0 for _ in range(len(DNX_large))], marker = "^", s = 10, c = 'black', label = 'D-newton')
+
+plt.legend()
+plt.show()
+
+
+print('NX_small:', len(NX_small))
+print('NX_middle:', len(NX_middle))
+print('NX_large:', len(NX_large))
+print('DNX_small:', len(DNX_small))
+print('DNX_middle:', len(DNX_middle))
+print('DNX_large:', len(DNX_large))
