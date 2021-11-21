@@ -47,7 +47,7 @@ def Runge_Kutta_Fehlberg(h, x0, y0, dy0, EPS, alpha):
     '''
     rx = [x0] # record of x
     ry = [y0] # record of y
-    rh = [h] # record of h
+    rh = [] # record of h
     rdy = [dy0] # record of dy/dx
     while rx[-1] < 2*math.pi:
         while True:
