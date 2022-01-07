@@ -27,10 +27,16 @@ void kadai_B(){
     csr.stencil5(2);
 
     auto [l, x] = Eigen::PowerIteration(csr);
-    auto y = Calculation::multiply(csr, x);
+    auto [s, y] = Eigen::InverseIteration(csr);
+    auto z = Calculation::multiply(csr, x);
     cout << l << endl;
     for(int i = 0; i < (int)x.size(); i++){
         cout << x[i] << ' ';
+    }
+    cout << endl;
+    cout << 1/s << endl;
+    for(int i = 0; i < (int)y.size(); i++){
+        cout << y[i] << ' ';
     }
     cout << endl;
 }
