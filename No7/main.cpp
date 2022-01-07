@@ -41,7 +41,14 @@ void kadai_B(){
     cout << endl;
 }
 
+void kadai_C(){
+    std::vector<std::vector<double>> a = {{2,1,0},{1,2,1},{1,5,3}};
+    auto res = Eigen::QR(a);
+    for(int i = 0; i < res.size(); i++) cout << res[i] << endl;
+}
+
 int main(){
     // kadai_A();
-    kadai_B();
+    // kadai_B();
+    kadai_C();
 }
