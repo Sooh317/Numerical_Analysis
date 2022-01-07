@@ -42,6 +42,35 @@ void regularlize(std::vector<T>& x){
     for(int i = 0; i < (int)x.size(); i++) x[i] /= k;
 }
 
+template<typename T>
+std::vector<std::vector<T>> matdot(const std::vector<std::vector<T>>& A, const std::vector<std::vector<T>>& B){
+    int m = A.size();
+    int n = B.size();
+    int l = B[0].size();
+
+    std::vector<std::vector<T>> C(m, std::vector<T>(l));
+    for(int i = 0; i < m; i++) for(int j = 0; j < l; j++) for(int k = 0; k < n; k++) C[i][j] += A[i][k] * B[k][j];
+    return C;
+}
+
+template<typename T>
+std::vector<std::vector<T>> transpose(const std::vector<std::vector<T>>& A){
+    std::vector<std::vector<T>> B((int)A[0].size(), std::vector<T>((int)A.size()));
+    for(int i = 0; i < (int)B.size(); i++){
+        for(int j = 0; j < (int)B[0].size(); j++){
+            B[i][j] = A[j][i];
+        }
+    }
+    return B;
+}
+
+
+std::vector<std::vector<double>> identity(int n){
+    std::vector<std::vector<double>> a(n, std::vector<double>(n));
+    for(int i = 0; i < n; i++) a[i][i] = 1;
+    return a;
+}
+
 }
 
 
