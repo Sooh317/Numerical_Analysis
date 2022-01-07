@@ -23,10 +23,19 @@ void kadai_A(){
 }
 
 void kadai_B(){
-    
+    SparseMatrix csr;
+    csr.stencil5(2);
+
+    auto [l, x] = Eigen::PowerIteration(csr);
+    auto y = Calculation::multiply(csr, x);
+    cout << l << endl;
+    for(int i = 0; i < (int)x.size(); i++){
+        cout << x[i] << ' ';
+    }
+    cout << endl;
 }
 
 int main(){
-    kadai_A();
+    // kadai_A();
     kadai_B();
 }
