@@ -27,8 +27,9 @@ std::pair<double, std::vector<double>> PowerIteration(SparseMatrix& csr, bool in
     return std::make_pair(lambda, x);
 }
 
-std::pair<double, std::vector<double>> InverseIteration(SparseMatrix& csr, double mu){ 
-
+// mu = 0 として絶対値最小を求める
+// 1/lambda が返ることに注意
+std::pair<double, std::vector<double>> InverseIteration(SparseMatrix& csr){
     return PowerIteration(csr, true);
 }
 
