@@ -23,32 +23,31 @@ void kadai_A(){
 }
 
 void kadai_B(){
-    SparseMatrix csr;
-    csr.stencil5(2);
+    SparseMatrix csr("Kuu.mtx");
 
     auto [l, x] = Eigen::PowerIteration(csr);
     auto [s, y] = Eigen::InverseIteration(csr);
     auto z = Calculation::multiply(csr, x);
-    cout << l << endl;
-    for(int i = 0; i < (int)x.size(); i++){
-        cout << x[i] << ' ';
-    }
-    cout << endl;
-    cout << 1/s << endl;
-    for(int i = 0; i < (int)y.size(); i++){
-        cout << y[i] << ' ';
-    }
-    cout << endl;
+    cout << "absmax: " << l << '\n';
+    cout << "absmin: " << 1/s << '\n';
+    cout << "cond:   " << abs(l*s) << '\n';
+    // result 
+    // absmax: 53.8028
+    // absmin: 0.00343204
+    // cond:   15676.6
 }
 
 void kadai_C(){
-    std::vector<std::vector<double>> a = {{2,1,0},{1,2,1},{1,5,3}};
-    auto res = Eigen::QR(a);
+    vector<vector<double>> hilbert(6, vector<double>(6));
+    for(int i = 0; i < 6; i++) for(int j = 0; j < 6; j++) hilbert[i][j] = 1.0 / (i + j + 1);
+    auto res = Eigen::QR(hilbert);
     for(int i = 0; i < res.size(); i++) cout << res[i] << endl;
+    // result
+    // [1.6189, 0.242361, 0.0163215, 0.000615748, 1.25708e-05, 1.0828e-07]
 }
 
 int main(){
     // kadai_A();
-    // kadai_B();
-    kadai_C();
+    kadai_B();
+    // kadai_C();
 }
