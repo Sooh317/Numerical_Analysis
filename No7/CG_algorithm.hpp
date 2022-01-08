@@ -90,7 +90,7 @@ std::vector<T> solve(SparseMatrix& A, std::vector<T>& b){
         double alpha = Calculation::dot(r, r) / Calculation::dot(p, y);
         for(int i = 0; i < (int)x.size(); i++) x[i] += alpha*p[i];
         for(int i = 0; i < (int)r.size(); i++) nr[i] = r[i] - alpha*y[i];
-        if(Calculation::abs(r) < EPS) break;
+        if(Calculation::abs(nr) < EPS) break;
         double beta = Calculation::dot(nr, nr) / Calculation::dot(r, r);
         std::swap(nr, r);
         for(int i = 0; i < (int)p.size(); i++) p[i] = r[i] + beta*p[i];
